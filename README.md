@@ -75,6 +75,17 @@ up gracefully. The assignment asks to re-prompt until correct; an unbounded
 loop on a live, billed call is a footgun, so the cap is the one deliberate
 deviation.
 
+**`digitTimeout` is set explicitly.** Plivo defaults to 2 seconds between
+consecutive digits, which is short enough that a caller entering a 4-digit OTP
+at a normal pace can have their entry truncated and submitted as a wrong code.
+It is raised to 5 seconds.
+
+**Audio is short, localised and self-hosted.** `public/audio/message-{en,es}.mp3`
+are 11 and 15 seconds at 8 kHz mono — Plivo's recommended telephony profile —
+served over the app's own HTTPS origin, so the demo does not depend on a
+third-party file staying online. A `<Speak>` line precedes every `<Play>` as a
+fallback if the audio fails to load.
+
 **Webhook URLs are derived from the request host**, overridable with
 `PUBLIC_BASE_URL`, so the same build works behind a tunnel and on Vercel.
 
@@ -98,7 +109,7 @@ npm run dev
 | `TARGET_NUMBER` | Optional default destination; the UI can override it |
 | `PUBLIC_BASE_URL` | Public HTTPS base URL; blank = derive from request |
 | `SESSION_SECRET` | Key used to sign the post-OTP session token |
-| `AUDIO_URL` | Publicly reachable MP3 for Level 2 → 1 |
+| `AUDIO_URL_EN` / `AUDIO_URL_ES` | Optional overrides for the Level 2 → 1 audio; defaults to the clips in `public/audio` |
 
 `.env.local` is gitignored; credentials never enter the repository.
 
@@ -136,9 +147,10 @@ returned XML:
 ./scripts/test-ivr.sh https://your.app     # against a deployment
 ```
 
-It covers 18 cases: the OTP gate and re-prompt loop, the attempt cap, direct
+It covers 20 cases: the OTP gate and re-prompt loop, the attempt cap, direct
 access to menu routes without a token, a forged token, both language branches,
-invalid digits at each level, audio playback, and forwarding to the associate.
+invalid digits at each level, localised audio playback, and forwarding to
+the associate.
 
 ## Project layout
 

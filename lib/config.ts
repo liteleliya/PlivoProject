@@ -7,7 +7,10 @@ export const cfg = {
   /** 4-digit OTP: birthdate in DDMM. Hardcoded per the assignment - no database. */
   otpCode: process.env.OTP_CODE ?? "2008",
   targetNumber: process.env.TARGET_NUMBER ?? "",
-  audioUrl: process.env.AUDIO_URL ?? "https://s3.amazonaws.com/plivocloud/music.mp3",
+  audioUrlOverride: {
+    en: process.env.AUDIO_URL_EN ?? "",
+    es: process.env.AUDIO_URL_ES ?? "",
+  },
   sessionSecret: process.env.SESSION_SECRET ?? "dev-secret-change-me",
   /** Cap on OTP re-prompts so a stuck call cannot loop forever. */
   maxOtpAttempts: 5,
@@ -25,4 +28,13 @@ export function baseUrl(req: Request): string {
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   return `${proto}://${host}`;
+}
+
+/**
+ * Audio played on Level 2 -> Press 1, in the caller's chosen language.
+ * Defaults to the short clips served from /public over the app's own HTTPS
+ * origin, so the demo does not depend on a third-party file staying online.
+ */
+export function audioUrl(lang: "en" | "es", base: string): string {
+  return cfg.audioUrlOverride[lang] || `${base}/audio/message-${lang}.mp3`;
 }

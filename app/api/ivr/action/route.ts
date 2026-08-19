@@ -1,4 +1,4 @@
-import { cfg, baseUrl } from "@/lib/config";
+import { cfg, baseUrl, audioUrl } from "@/lib/config";
 import { plivoParams, urlWith } from "@/lib/params";
 import { speak, play, dial, redirect, hangup, xmlResponse, type Lang } from "@/lib/xml";
 import { verifySession } from "@/lib/session";
@@ -37,7 +37,7 @@ async function handler(req: Request) {
   if (digit === "1") {
     return xmlResponse(
       speak(t.playing, lang),
-      play(cfg.audioUrl),
+      play(audioUrl(lang, base)),
       // Return to the Level 2 menu so the caller can pick another option.
       redirect(urlWith(base, "/api/ivr/options", { token, lang })),
     );

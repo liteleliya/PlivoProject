@@ -1,4 +1,4 @@
-import { cfg, baseUrl } from "@/lib/config";
+import { cfg, baseUrl, audioUrl } from "@/lib/config";
 import { urlWith } from "@/lib/params";
 
 export const runtime = "nodejs";
@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     fromNumber: cfg.fromNumber,
     associateNumber: cfg.associateNumber,
     defaultTarget: cfg.targetNumber || null,
-    audioUrl: cfg.audioUrl,
+    audioUrl: { en: audioUrl("en", base), es: audioUrl("es", base) },
     otpConfigured: cfg.otpCode.length === 4,
     authIdSet: Boolean(cfg.authId),
     authTokenSet: Boolean(cfg.authToken),
