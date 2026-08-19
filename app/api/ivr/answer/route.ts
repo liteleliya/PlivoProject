@@ -1,27 +1,23 @@
-import { cfg, baseUrl } from "@/lib/config";
+import { baseUrl } from "@/lib/config";
 import { plivoParams, urlWith } from "@/lib/params";
-import { getDigits, speak, redirect, hangup, xmlResponse } from "@/lib/xml";
+import { getDigits, speak, redirect, xmlResponse } from "@/lib/xml";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
  * Entry point of the call (answer_url). Prompts for the 4-digit OTP.
- * `attempt` tracks how many times we have asked, so a caller who never enters
- * anything does not loop forever.
+ *
+ * Per the assignment, the bot re-prompts until the correct OTP is entered, so
+ * there is no attempt limit. `attempt` is carried only to vary the wording and
+ * to make the retry count visible in logs. The call itself bounds the loop:
+ * it ends when the caller hangs up.
  */
 async function handler(req: Request) {
   const p = await plivoParams(req);
   const base = baseUrl(req);
   const attempt = Number(p.attempt ?? 1);
   const retry = p.retry === "1";
-
-  if (attempt > cfg.maxOtpAttempts) {
-    return xmlResponse(
-      speak("Too many incorrect attempts. Goodbye."),
-      hangup(),
-    );
-  }
 
   const greeting = retry
     ? speak("That O T P was not correct. Please try again.")

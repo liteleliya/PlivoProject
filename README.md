@@ -70,10 +70,9 @@ barge in with DTMF before the prompt finishes playing.
 nothing, Plivo falls through past `<GetDigits>` rather than calling the action
 URL — so each menu ends with a `<Speak>` plus `<Redirect>` that re-asks.
 
-**OTP re-prompts are capped at 5** (`cfg.maxOtpAttempts`), then the call hangs
-up gracefully. The assignment asks to re-prompt until correct; an unbounded
-loop on a live, billed call is a footgun, so the cap is the one deliberate
-deviation.
+**OTP re-prompts are unlimited**, as the assignment requires: the bot re-asks
+until the correct code is entered and never hangs up on a wrong one. The loop
+is bounded by the call itself — it ends when the caller hangs up.
 
 **`digitTimeout` is set explicitly.** Plivo defaults to 2 seconds between
 consecutive digits, which is short enough that a caller entering a 4-digit OTP
@@ -147,10 +146,28 @@ returned XML:
 ./scripts/test-ivr.sh https://your.app     # against a deployment
 ```
 
-It covers 20 cases: the OTP gate and re-prompt loop, the attempt cap, direct
+It covers 21 cases: the OTP gate and its unlimited re-prompt loop, direct
 access to menu routes without a token, a forged token, both language branches,
 invalid digits at each level, localised audio playback, and forwarding to
 the associate.
+
+## Requirement coverage
+
+| Assignment requirement | Where |
+|---|---|
+| Endpoint to initiate an outbound call via Plivo's API | `app/api/call/route.ts` |
+| Target number via UI or configuration variable | `app/page.tsx` input, `TARGET_NUMBER` env |
+| Prompt for a 4-digit OTP using DTMF on answer | `app/api/ivr/answer/route.ts` |
+| OTP is a hardcoded birthdate in DDMM | `cfg.otpCode` in `lib/config.ts` |
+| Re-prompt until the correct OTP is entered | `app/api/ivr/otp/route.ts` — no attempt limit |
+| IVR menu reachable only after a correct OTP | HMAC gate, `lib/session.ts` |
+| Level 1 — English / Spanish selection | `app/api/ivr/menu`, `app/api/ivr/language` |
+| Level 2 → 1 — play a publicly hosted MP3 | `app/api/ivr/action`, `public/audio/message-{en,es}.mp3` |
+| Level 2 → 2 — forward to an associate | `<Dial>` in `app/api/ivr/action` |
+| Plivo XML for the call flow | `lib/xml.ts` |
+| DTMF handled at every level, with branching | all `app/api/ivr/*` routes |
+| Invalid input repeats the current prompt | `invalid=1` re-prompt at each level |
+| Optional frontend to trigger the call | `app/page.tsx` |
 
 ## Project layout
 

@@ -12,8 +12,6 @@ export const cfg = {
     es: process.env.AUDIO_URL_ES ?? "",
   },
   sessionSecret: process.env.SESSION_SECRET ?? "dev-secret-change-me",
-  /** Cap on OTP re-prompts so a stuck call cannot loop forever. */
-  maxOtpAttempts: 5,
 };
 
 /**

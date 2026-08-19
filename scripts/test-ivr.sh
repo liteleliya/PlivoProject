@@ -18,6 +18,13 @@ expect() {
   else printf "  \033[31m✗\033[0m %s\n     expected /%s/ in:\n%s\n" "$1" "$3" "$2"; FAIL=$((FAIL+1)); fi
 }
 
+# refute <label> <xml> <pattern>  - passes when the pattern is absent
+refute() {
+  local flat; flat=$(tr -d "\n" <<<"$2")
+  if grep -qE "$3" <<<"$flat"; then printf "  \033[31m✗\033[0m %s\n     unexpected /%s/ in:\n%s\n" "$1" "$3" "$2"; FAIL=$((FAIL+1))
+  else printf "  \033[32m✓\033[0m %s\n" "$1"; PASS=$((PASS+1)); fi
+}
+
 hdr "OTP gate"
 X=$(post "/api/ivr/answer?attempt=1")
 expect "answer prompts for 4 digits" "$X" 'numDigits="4"'
@@ -35,8 +42,9 @@ expect "correct OTP authenticates" "$X" 'authenticated'
 expect "correct OTP mints a session token" "$X" 'menu\?token=[a-f0-9]{32}'
 TOKEN=$(grep -oE 'token=[a-f0-9]{32}' <<<"$X" | head -1 | cut -d= -f2)
 
-X=$(post "/api/ivr/answer?attempt=6")
-expect "attempt cap hangs up gracefully" "$X" '<Hangup'
+X=$(post "/api/ivr/answer?attempt=50")
+expect "re-prompts indefinitely, never hangs up (spec requirement)" "$X" 'numDigits="4"'
+refute "no Hangup on repeated wrong entries" "$X" '<Hangup'
 
 hdr "Authentication gating"
 X=$(post "/api/ivr/menu")
