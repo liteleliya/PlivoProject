@@ -1,4 +1,9 @@
-/** Minimal, typed Plivo XML builders. */
+export type Lang = "en" | "es";
+
+export const VOICE: Record<Lang, { language: string; voice: string }> = {
+  en: { language: "en-US", voice: "Polly.Kendra" },
+  es: { language: "es-ES", voice: "Polly.Conchita" },
+};
 
 export function esc(s: string): string {
   return s
@@ -8,13 +13,6 @@ export function esc(s: string): string {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
 }
-
-export type Lang = "en" | "es";
-
-export const VOICE: Record<Lang, { language: string; voice: string }> = {
-  en: { language: "en-US", voice: "WOMAN" },
-  es: { language: "es-ES", voice: "WOMAN" },
-};
 
 export function speak(text: string, lang: Lang = "en"): string {
   const { language, voice } = VOICE[lang];
@@ -29,11 +27,6 @@ export function redirect(url: string): string {
   return `  <Redirect>${esc(url)}</Redirect>`;
 }
 
-export function hangup(reason = "normal"): string {
-  return `  <Hangup reason="${reason}"/>`;
-}
-
-/** <Dial> to the live associate, presenting the Plivo number as caller ID. */
 export function dial(number: string, callerId: string): string {
   return [
     `  <Dial callerId="${esc(callerId)}" timeout="30">`,
@@ -43,8 +36,9 @@ export function dial(number: string, callerId: string): string {
 }
 
 /**
- * <GetDigits> with the prompt nested inside so the caller can barge in with
- * DTMF before the prompt finishes.
+ * Digit collection with the prompt nested inside, so callers can barge in.
+ * digitTimeout defaults to 5s: Plivo's 2s default cuts off multi-digit entry
+ * at a normal keying pace.
  */
 export function getDigits(opts: {
   action: string;
@@ -61,7 +55,6 @@ export function getDigits(opts: {
   ].join("\n");
 }
 
-/** Wrap elements in <Response> and return with the correct content type. */
 export function xmlResponse(...parts: string[]): Response {
   const body = `<?xml version="1.0" encoding="utf-8"?>\n<Response>\n${parts.join("\n")}\n</Response>`;
   return new Response(body, {

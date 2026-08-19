@@ -60,6 +60,7 @@ expect "forged token is rejected" "$X" 'ivr/answer'
 hdr "Level 1 — language"
 X=$(post "/api/ivr/menu?token=$TOKEN")
 expect "offers English" "$X" 'For English, press 1'
+expect "uses Polly voices, not the defaults" "$X" 'voice="Polly\.'
 expect "offers Spanish in es-ES voice" "$X" 'language="es-ES"[^>]*>Para español'
 expect "1s pause between the two languages" "$X" 'press 1\.</Speak>\s*<Play>[^<]*silence-1s\.mp3</Play>\s*<Speak[^>]*es-ES'
 
