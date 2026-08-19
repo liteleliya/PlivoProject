@@ -51,10 +51,11 @@ export function getDigits(opts: {
   numDigits: number;
   prompt: string;
   timeout?: number;
+  digitTimeout?: number;
 }): string {
-  const { action, numDigits, prompt, timeout = 12 } = opts;
+  const { action, numDigits, prompt, timeout = 12, digitTimeout = 5 } = opts;
   return [
-    `  <GetDigits action="${esc(action)}" method="POST" timeout="${timeout}" numDigits="${numDigits}" retries="1" redirect="true">`,
+    `  <GetDigits action="${esc(action)}" method="POST" timeout="${timeout}" digitTimeout="${digitTimeout}" numDigits="${numDigits}" retries="1" redirect="true">`,
     prompt.replace(/^/gm, "  "),
     `  </GetDigits>`,
   ].join("\n");

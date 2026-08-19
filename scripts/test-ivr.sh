@@ -22,6 +22,7 @@ hdr "OTP gate"
 X=$(post "/api/ivr/answer?attempt=1")
 expect "answer prompts for 4 digits" "$X" 'numDigits="4"'
 expect "prompt nested inside GetDigits for barge-in" "$X" '<GetDigits[^>]*>\s*<Speak'
+expect "digitTimeout set so slow entry is not truncated" "$X" 'digitTimeout="[5-9]|digitTimeout="[1-9][0-9]'
 
 X=$(post "/api/ivr/otp?attempt=1" "Digits=1111")
 expect "wrong OTP redirects back to prompt" "$X" 'answer\?attempt=2&amp;retry=1'
@@ -60,7 +61,9 @@ X=$(post "/api/ivr/options?token=$TOKEN&lang=es")
 expect "Spanish Level 2 menu" "$X" 'Oprima 1 para escuchar'
 
 X=$(post "/api/ivr/action?token=$TOKEN&lang=en" "Digits=1")
-expect "press 1 plays the audio file" "$X" '<Play>https?://'
+expect "press 1 plays English audio over HTTPS" "$X" '<Play>https?://[^<]*message-en\.mp3</Play>'
+X=$(post "/api/ivr/action?token=$TOKEN&lang=es" "Digits=1")
+expect "press 1 plays Spanish audio" "$X" '<Play>https?://[^<]*message-es\.mp3</Play>'
 X=$(post "/api/ivr/action?token=$TOKEN&lang=es" "Digits=2")
 expect "press 2 dials the associate" "$X" '<Dial[^>]*>.*<Number>\+'
 X=$(post "/api/ivr/action?token=$TOKEN&lang=en" "Digits=7")
