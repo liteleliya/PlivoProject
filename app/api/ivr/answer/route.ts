@@ -31,8 +31,10 @@ async function handler(req: Request) {
       timeout: 12,
       prompt: speak("Using your phone keypad, please enter your 4 digit O T P."),
     }),
-    // Reached only when the caller entered nothing before the timeout.
-    speak("We did not receive any input."),
+    // Plivo falls through to here when the caller enters nothing, or enters
+    // fewer than four digits and then pauses past digitTimeout. Partial input
+    // is never submitted as a wrong code, so the wording has to cover both.
+    speak("Sorry, we did not get all four digits. Please try again."),
     redirect(urlWith(base, "/api/ivr/answer", { attempt: attempt + 1 })),
   );
 }

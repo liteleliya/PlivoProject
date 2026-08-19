@@ -46,6 +46,11 @@ X=$(post "/api/ivr/answer?attempt=50")
 expect "re-prompts indefinitely, never hangs up (spec requirement)" "$X" 'numDigits="4"'
 refute "no Hangup on repeated wrong entries" "$X" '<Hangup'
 
+X=$(post "/api/ivr/answer?attempt=1")
+expect "incomplete-entry fallback names the real problem" "$X" 'did not get all four digits'
+refute "incomplete-entry fallback avoids the misleading wording" "$X" 'did not receive any input'
+refute "no XML entities in spoken text" "$X" '&(apos|quot);'
+
 hdr "Authentication gating"
 X=$(post "/api/ivr/menu")
 expect "menu without a token bounces to OTP" "$X" 'Authentication required'
