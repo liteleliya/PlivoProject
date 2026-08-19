@@ -19,16 +19,15 @@ const PROMPTS: Record<Lang, { menu: string; invalid: string; noInput: string }> 
   },
 };
 
-/** IVR Level 2 - action menu, rendered in the language chosen at Level 1. */
+/** Level 2: action menu, in the language chosen at Level 1. */
 async function handler(req: Request) {
   const p = await plivoParams(req);
   const base = baseUrl(req);
   const token = p.token ?? null;
-  const callUuid = p.CallUUID ?? "unknown";
   const lang: Lang = p.lang === "es" ? "es" : "en";
   const t = PROMPTS[lang];
 
-  if (!verifySession(callUuid, token)) {
+  if (!verifySession(p.CallUUID ?? "unknown", token)) {
     return xmlResponse(redirect(urlWith(base, "/api/ivr/answer", { attempt: 1 })));
   }
 

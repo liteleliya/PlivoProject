@@ -6,34 +6,28 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Entry point of the call (answer_url). Prompts for the 4-digit OTP.
- *
- * Per the assignment, the bot re-prompts until the correct OTP is entered, so
- * there is no attempt limit. `attempt` is carried only to vary the wording and
- * to make the retry count visible in logs. The call itself bounds the loop:
- * it ends when the caller hangs up.
+ * Call entry point (answer_url): prompts for the OTP. Re-prompts without
+ * limit, as the assignment requires; the loop ends when the caller hangs up.
  */
 async function handler(req: Request) {
   const p = await plivoParams(req);
   const base = baseUrl(req);
   const attempt = Number(p.attempt ?? 1);
-  const retry = p.retry === "1";
 
-  const greeting = retry
-    ? speak("That O T P was not correct. Please try again.")
-    : speak("Welcome to Inspire Works. This call is protected by a one time pass code.");
+  const greeting =
+    p.retry === "1"
+      ? speak("That O T P was not correct. Please try again.")
+      : speak("Welcome to Inspire Works. This call is protected by a one time pass code.");
 
   return xmlResponse(
     greeting,
     getDigits({
       action: urlWith(base, "/api/ivr/otp", { attempt }),
       numDigits: 4,
-      timeout: 12,
       prompt: speak("Using your phone keypad, please enter your 4 digit O T P."),
     }),
-    // Plivo falls through to here when the caller enters nothing, or enters
-    // fewer than four digits and then pauses past digitTimeout. Partial input
-    // is never submitted as a wrong code, so the wording has to cover both.
+    // Fall-through: no digits, or fewer than four followed by a pause.
+    // Plivo discards partial input rather than submitting it.
     speak("Sorry, we did not get all four digits. Please try again."),
     redirect(urlWith(base, "/api/ivr/answer", { attempt: attempt + 1 })),
   );

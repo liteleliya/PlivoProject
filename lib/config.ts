@@ -1,23 +1,21 @@
-/** Central configuration, read from environment. */
 export const cfg = {
   authId: process.env.PLIVO_AUTH_ID ?? "",
   authToken: process.env.PLIVO_AUTH_TOKEN ?? "",
   fromNumber: process.env.PLIVO_FROM_NUMBER ?? "+918035454161",
   associateNumber: process.env.ASSOCIATE_NUMBER ?? "+912264236412",
-  /** 4-digit OTP: birthdate in DDMM. Hardcoded per the assignment - no database. */
+  /** 4-digit OTP: birthdate in DDMM, hardcoded per the assignment. */
   otpCode: process.env.OTP_CODE ?? "2008",
   targetNumber: process.env.TARGET_NUMBER ?? "",
+  sessionSecret: process.env.SESSION_SECRET ?? "dev-secret-change-me",
   audioUrlOverride: {
     en: process.env.AUDIO_URL_EN ?? "",
     es: process.env.AUDIO_URL_ES ?? "",
   },
-  sessionSecret: process.env.SESSION_SECRET ?? "dev-secret-change-me",
 };
 
 /**
- * Public base URL used to build absolute webhook URLs for Plivo.
- * Falls back to the incoming request's host so the same code works behind a
- * cloudflared tunnel and on Vercel with no configuration change.
+ * Base URL for the webhook URLs handed to Plivo. Falls back to the incoming
+ * request's host, so one build works behind a tunnel and on Vercel.
  */
 export function baseUrl(req: Request): string {
   const fromEnv = process.env.PUBLIC_BASE_URL?.trim();
@@ -28,19 +26,14 @@ export function baseUrl(req: Request): string {
   return `${proto}://${host}`;
 }
 
-/**
- * Audio played on Level 2 -> Press 1, in the caller's chosen language.
- * Defaults to the short clips served from /public over the app's own HTTPS
- * origin, so the demo does not depend on a third-party file staying online.
- */
+/** Level 2 audio in the caller's language, self-hosted unless overridden. */
 export function audioUrl(lang: "en" | "es", base: string): string {
   return cfg.audioUrlOverride[lang] || `${base}/audio/message-${lang}.mp3`;
 }
 
 /**
- * One second of silence, played between prompts.
- * <Wait> is not a permitted child of <GetDigits> - only <Speak> and <Play> -
- * so a silent clip is the documented way to space prompts apart inside a menu.
+ * One second of silence. <GetDigits> only permits <Speak> and <Play> children,
+ * so pacing between prompts comes from playing a silent clip.
  */
 export function pauseUrl(base: string): string {
   return `${base}/audio/silence-1s.mp3`;

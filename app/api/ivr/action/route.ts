@@ -1,6 +1,6 @@
 import { cfg, baseUrl, audioUrl } from "@/lib/config";
 import { plivoParams, urlWith } from "@/lib/params";
-import { speak, play, dial, redirect, hangup, xmlResponse, type Lang } from "@/lib/xml";
+import { speak, play, dial, redirect, xmlResponse, type Lang } from "@/lib/xml";
 import { verifySession } from "@/lib/session";
 
 export const runtime = "nodejs";
@@ -19,16 +19,15 @@ const PROMPTS: Record<Lang, { playing: string; connecting: string; done: string 
   },
 };
 
-/** Terminal branch of the IVR: play an MP3, or forward to the associate. */
+/** Level 2 branching: 1 = play audio then re-offer the menu, 2 = forward. */
 async function handler(req: Request) {
   const p = await plivoParams(req);
   const base = baseUrl(req);
   const token = p.token ?? null;
-  const callUuid = p.CallUUID ?? "unknown";
   const lang: Lang = p.lang === "es" ? "es" : "en";
   const t = PROMPTS[lang];
 
-  if (!verifySession(callUuid, token)) {
+  if (!verifySession(p.CallUUID ?? "unknown", token)) {
     return xmlResponse(redirect(urlWith(base, "/api/ivr/answer", { attempt: 1 })));
   }
 
@@ -38,7 +37,6 @@ async function handler(req: Request) {
     return xmlResponse(
       speak(t.playing, lang),
       play(audioUrl(lang, base)),
-      // Return to the Level 2 menu so the caller can pick another option.
       redirect(urlWith(base, "/api/ivr/options", { token, lang })),
     );
   }
@@ -48,7 +46,6 @@ async function handler(req: Request) {
       speak(t.connecting, lang),
       dial(cfg.associateNumber, cfg.fromNumber),
       speak(t.done, lang),
-      hangup(),
     );
   }
 

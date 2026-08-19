@@ -2,10 +2,10 @@ import crypto from "node:crypto";
 import { cfg } from "./config";
 
 /**
- * The IVR is stateless - no database, per the assignment. To make sure the
- * menu routes cannot simply be hit directly without passing the OTP gate, we
- * mint a short HMAC over the CallUUID once the correct OTP is entered and
- * carry it through the remaining webhook hops as a query parameter.
+ * The flow is stateless: state travels in webhook URLs, which would leave the
+ * menu routes directly callable. A correct OTP mints an HMAC over the
+ * CallUUID; every menu route requires it, so the IVR is unreachable without
+ * authenticating first.
  */
 export function signSession(callUuid: string): string {
   return crypto

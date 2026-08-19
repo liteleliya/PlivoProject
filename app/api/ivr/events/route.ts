@@ -1,22 +1,19 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/**
- * hangup_url target. Plivo posts the final call state here; logging it makes
- * failures (busy, no-answer, rejected) visible in the dev server output.
- */
+/** hangup_url callback: logs final call state for observability. */
 export async function POST(req: Request) {
   try {
     const form = await req.formData();
-    const data = Object.fromEntries([...form.entries()].map(([k, v]) => [k, String(v)]));
+    const d = Object.fromEntries([...form.entries()].map(([k, v]) => [k, String(v)]));
     console.log("[plivo:hangup]", {
-      CallUUID: data.CallUUID,
-      CallStatus: data.CallStatus,
-      HangupCause: data.HangupCauseName ?? data.HangupCause,
-      Duration: data.Duration,
+      CallUUID: d.CallUUID,
+      CallStatus: d.CallStatus,
+      HangupCause: d.HangupCauseName ?? d.HangupCause,
+      Duration: d.Duration,
     });
   } catch {
-    // Ignore malformed callbacks.
+    // Malformed callback; nothing to log.
   }
-  return new Response("", { status: 204 });
+  return new Response(null, { status: 204 });
 }
