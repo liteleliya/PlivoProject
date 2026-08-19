@@ -79,6 +79,11 @@ consecutive digits, which is short enough that a caller entering a 4-digit OTP
 at a normal pace can have their entry truncated and submitted as a wrong code.
 It is raised to 5 seconds.
 
+**Prompts are spaced with a silent clip.** `<Wait>` is not a permitted child of
+`<GetDigits>` — only `<Speak>` and `<Play>` are — so the one-second gap between
+the English and Spanish options at Level 1 comes from playing
+`public/audio/silence-1s.mp3`. Back to back, the two languages sound clipped.
+
 **Audio is short, localised and self-hosted.** `public/audio/message-{en,es}.mp3`
 are 11 and 15 seconds at 8 kHz mono — Plivo's recommended telephony profile —
 served over the app's own HTTPS origin, so the demo does not depend on a
@@ -146,7 +151,7 @@ returned XML:
 ./scripts/test-ivr.sh https://your.app     # against a deployment
 ```
 
-It covers 21 cases: the OTP gate and its unlimited re-prompt loop, direct
+It covers 22 cases: the OTP gate and its unlimited re-prompt loop, direct
 access to menu routes without a token, a forged token, both language branches,
 invalid digits at each level, localised audio playback, and forwarding to
 the associate.

@@ -56,6 +56,7 @@ hdr "Level 1 — language"
 X=$(post "/api/ivr/menu?token=$TOKEN")
 expect "offers English" "$X" 'For English, press 1'
 expect "offers Spanish in es-ES voice" "$X" 'language="es-ES"[^>]*>Para español'
+expect "1s pause between the two languages" "$X" 'press 1\.</Speak>\s*<Play>[^<]*silence-1s\.mp3</Play>\s*<Speak[^>]*es-ES'
 
 X=$(post "/api/ivr/language?token=$TOKEN" "Digits=1")
 expect "press 1 selects English" "$X" 'lang=en'

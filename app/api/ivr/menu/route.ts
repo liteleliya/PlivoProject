@@ -1,6 +1,6 @@
-import { baseUrl } from "@/lib/config";
+import { baseUrl, pauseUrl } from "@/lib/config";
 import { plivoParams, urlWith } from "@/lib/params";
-import { getDigits, speak, redirect, xmlResponse } from "@/lib/xml";
+import { getDigits, speak, play, redirect, xmlResponse } from "@/lib/xml";
 import { verifySession } from "@/lib/session";
 
 export const runtime = "nodejs";
@@ -29,6 +29,8 @@ async function handler(req: Request) {
       numDigits: 1,
       prompt: [
         speak("For English, press 1.", "en"),
+        // A beat between the two languages; back to back sounds clipped.
+        play(pauseUrl(base)),
         speak("Para español, oprima 2.", "es"),
       ].join("\n"),
     }),

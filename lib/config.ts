@@ -36,3 +36,12 @@ export function baseUrl(req: Request): string {
 export function audioUrl(lang: "en" | "es", base: string): string {
   return cfg.audioUrlOverride[lang] || `${base}/audio/message-${lang}.mp3`;
 }
+
+/**
+ * One second of silence, played between prompts.
+ * <Wait> is not a permitted child of <GetDigits> - only <Speak> and <Play> -
+ * so a silent clip is the documented way to space prompts apart inside a menu.
+ */
+export function pauseUrl(base: string): string {
+  return `${base}/audio/silence-1s.mp3`;
+}
