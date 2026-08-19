@@ -104,9 +104,9 @@ export default function Home() {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-400">Call flow</h2>
           <ol className="mt-4 space-y-3 text-sm text-neutral-300">
             <li><span className="text-neutral-500">1.</span> Outbound call is answered</li>
-            <li><span className="text-neutral-500">2.</span> Caller enters the 4-digit OTP — wrong entries re-prompt</li>
-            <li><span className="text-neutral-500">3.</span> Level 1 — press <b>1</b> English, <b>2</b> Spanish</li>
-            <li><span className="text-neutral-500">4.</span> Level 2 — press <b>1</b> to play audio, <b>2</b> to reach an associate</li>
+            <li><span className="text-neutral-500">2.</span> Caller enters the 4-digit OTP; wrong entries re-prompt</li>
+            <li><span className="text-neutral-500">3.</span> Level 1: press <b>1</b> English, <b>2</b> Spanish</li>
+            <li><span className="text-neutral-500">4.</span> Level 2: press <b>1</b> to play audio, <b>2</b> to reach an associate</li>
           </ol>
         </section>
 

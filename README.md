@@ -1,7 +1,7 @@
-# Plivo IVR Demo — InspireWorks
+# Plivo IVR Demo for InspireWorks
 
 A phone system that calls you, checks who you are, and then lets you choose
-what happens next — all driven by the [Plivo](https://www.plivo.com) Voice API.
+what happens next, all driven by the [Plivo](https://www.plivo.com) Voice API.
 
 When the call is placed, your phone rings. Answering starts a short
 conversation with an automated agent:
@@ -49,7 +49,7 @@ POST /api/call ──── Plivo REST API ────> outbound call placed
 
 Plivo drives the call by POSTing to these routes and executing the
 [Plivo XML](https://www.plivo.com/docs/voice/xml/overview) each one returns.
-State between steps — attempt count, chosen language, authentication — travels
+State between steps (attempt count, chosen language, authentication) travels
 in the URLs themselves. There is no database.
 
 ## Running it
@@ -71,7 +71,7 @@ npm run dev
 | `PUBLIC_BASE_URL` | Public HTTPS base; leave blank to derive from the request |
 | `AUDIO_URL_EN` / `AUDIO_URL_ES` | Optional audio overrides; defaults ship in `public/audio` |
 
-`.env.local` is gitignored — credentials never enter the repository.
+`.env.local` is gitignored, so credentials never enter the repository.
 
 **Plivo must be able to reach the app over public HTTPS** to fetch its call
 instructions, so localhost alone cannot receive calls (the app will say so
@@ -90,7 +90,7 @@ are loaded and whether Plivo can reach the current URL.
 ```
 
 The harness replays the exact form-encoded webhooks Plivo sends and asserts on
-the returned XML — 26 checks covering the OTP gate and its unlimited re-prompt
+the returned XML: 26 checks covering the OTP gate and its unlimited re-prompt
 loop, unauthenticated and forged-token access to menu routes, both language
 branches, invalid and incomplete input at every level, audio playback, and
 forwarding.
@@ -98,25 +98,25 @@ forwarding.
 ## Design notes
 
 **Authentication is enforced, not assumed.** With state in URLs, the menu
-routes would be directly callable — skipping the OTP. A correct OTP mints an
+routes would be directly callable, skipping the OTP. A correct OTP mints an
 HMAC over the call's UUID (`lib/session.ts`); every menu route verifies it in
 constant time and bounces anything else back to the passcode prompt.
 
 **DTMF timing is tuned.** Plivo allows only 2 seconds between digits by
-default — tight enough to cut off a 4-digit code keyed at normal pace. It is
+default, which is tight enough to cut off a 4-digit code keyed at normal pace. It is
 raised to 5. Prompts sit inside `<GetDigits>` so a caller who knows the menu
 can barge in; a one-second silent clip spaces the two language options apart,
 since `<Wait>` is not a permitted child of `<GetDigits>`.
 
 **Incomplete entry is told the truth.** Fewer than four digits followed by a
-pause makes Plivo discard the partial input and fall through — the caller is
+pause makes Plivo discard the partial input and fall through. The caller is
 told exactly that, not "no input received".
 
 **Voices are Amazon Polly** (`Polly.Kendra` for English, `Polly.Conchita` for
 Spanish) rather than the stock TTS, chosen for a calmer, more natural read.
 
 **Audio is self-hosted.** The Level 2 message ships in the repo (11s English,
-15s Spanish, 8 kHz mono — telephony profile) and is served from the app's own
+15s Spanish, 8 kHz mono telephony profile) and is served from the app's own
 origin, so the demo never depends on a third-party file staying online.
 
 ## Requirement coverage
@@ -127,7 +127,7 @@ origin, so the demo never depends on a third-party file staying online.
 | Target number via UI or configuration variable | `app/page.tsx`, `TARGET_NUMBER` |
 | 4-digit OTP over DTMF on answer | `app/api/ivr/answer/route.ts` |
 | OTP hardcoded, birthdate in DDMM | `cfg.otpCode`, `lib/config.ts` |
-| Re-prompt until the correct OTP | `app/api/ivr/otp/route.ts` — no limit |
+| Re-prompt until the correct OTP | `app/api/ivr/otp/route.ts`, no limit |
 | Menu reachable only after a correct OTP | HMAC gate, `lib/session.ts` |
 | Level 1: English / Spanish | `app/api/ivr/menu`, `…/language` |
 | Level 2 → 1: play a hosted MP3 | `…/action`, `public/audio/` |
